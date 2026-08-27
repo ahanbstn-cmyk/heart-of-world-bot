@@ -17,8 +17,9 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 PORT = int(os.getenv("PORT", 10000))
 
-# Safe default intents (Guaranteed not to crash even if privileged intents are disabled)
+# Safe default intents
 intents = discord.Intents.default()
+intents.message_content = True
 
 # ----------------- Profanity Filter Wordlist -----------------
 PROFANITY_PATTERNS = [
@@ -35,13 +36,6 @@ class HeartOfWorldBot(commands.Bot):
     async def setup_hook(self):
         self.add_view(VerificationView())
         self.add_view(RoleSelectionView())
-        
-        print("[*] Syncing slash commands to Discord...")
-        try:
-            synced = await self.tree.sync()
-            print(f"[OK] Synced {len(synced)} slash command(s) successfully.")
-        except Exception as e:
-            print(f"[WARN] Error syncing slash commands: {e}")
 
     async def on_ready(self):
         print("=" * 60)
@@ -49,13 +43,21 @@ class HeartOfWorldBot(commands.Bot):
         print(f"[SERVERS] Connected Guilds ({len(self.guilds)}): {[g.name for g in self.guilds]}")
         print("=" * 60)
         
+        # Instantly sync slash commands to each joined guild
+        for guild in self.guilds:
+            try:
+                self.tree.copy_global_to(guild=guild)
+                await self.tree.sync(guild=guild)
+                print(f"[SYNC] Synced slash commands to {guild.name}")
+            except Exception as e:
+                print(f"[SYNC ERR] {guild.name}: {e}")
+
         activity = discord.Activity(
             type=discord.ActivityType.watching, 
             name="THE WORLD HIDES SECRETS. 🗂️"
         )
         await self.change_presence(status=discord.Status.online, activity=activity)
 
-    # Automated Profanity & Swear Filter
     async def on_message(self, message: discord.Message):
         if message.author.bot:
             return
@@ -139,14 +141,9 @@ class RoleSelectionView(discord.ui.View):
             await interaction.response.send_message(f"✅ Added **{role_name}** role! {message}", ephemeral=True)
 
 
-# ----------------- Slash Commands -----------------
+# ----------------- Server Setup Core Logic -----------------
 
-@bot.tree.command(name="setup_full_server", description="[Admin] Set up all classified categories, dossiers & regional text channels (No Voice)")
-@app_commands.checks.has_permissions(administrator=True)
-async def setup_full_server(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
-    guild = interaction.guild
-
+async def execute_server_setup(guild: discord.Guild, status_channel=None):
     # 1. Category: ARCHIVES & RULES
     cat_info = discord.utils.get(guild.categories, name="📌 ARCHIVES & RULES") or await guild.create_category("📌 ARCHIVES & RULES")
 
@@ -262,7 +259,24 @@ async def setup_full_server(interaction: discord.Interaction):
         if not discord.utils.get(guild.text_channels, name=ch_name):
             await guild.create_text_channel(ch_name, category=cat_chat)
 
-    await interaction.followup.send("✅ **Heart Of World Investigation Hub is LIVE!** All text archives, rules, regional hubs, and auto-moderation have been configured without voice channels.", ephemeral=True)
+    if status_channel:
+        await status_channel.send("✅ **Heart Of World Investigation Hub is LIVE!** All text archives, rules, regional hubs, and auto-moderation have been configured.")
+
+
+# ----------------- Commands (Both Slash & Prefix !setup) -----------------
+
+@bot.command(name="setup")
+@commands.has_permissions(administrator=True)
+async def setup_prefix(ctx):
+    await ctx.send("⚙️ Setting up Heart Of World server archives...")
+    await execute_server_setup(ctx.guild, ctx.channel)
+
+@bot.tree.command(name="setup_full_server", description="[Admin] Set up all classified categories, dossiers & regional text channels")
+@app_commands.checks.has_permissions(administrator=True)
+async def setup_slash(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    await execute_server_setup(interaction.guild)
+    await interaction.followup.send("✅ **Heart Of World Investigation Hub is LIVE!**", ephemeral=True)
 
 
 @bot.tree.command(name="about", description="Learn about the Heart Of World Collectible Card Story universe")
