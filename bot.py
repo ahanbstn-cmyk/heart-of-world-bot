@@ -141,22 +141,38 @@ class RoleSelectionView(discord.ui.View):
             await interaction.response.send_message(f"✅ Added **{role_name}** role! {message}", ephemeral=True)
 
 
-# ----------------- Server Setup Core Logic -----------------
+# ----------------- Server Setup Core Logic with Read-Only Locks -----------------
 
 async def execute_server_setup(guild: discord.Guild, status_channel=None):
-    # 1. Category: ARCHIVES & RULES
-    cat_info = discord.utils.get(guild.categories, name="📌 ARCHIVES & RULES") or await guild.create_category("📌 ARCHIVES & RULES")
+    # Overwrites: Read-only for everyone, full access for Bot
+    read_only_overwrites = {
+        guild.default_role: discord.PermissionOverwrite(send_messages=False, add_reactions=False, view_channel=True, read_messages=True),
+        guild.me: discord.PermissionOverwrite(send_messages=True, embed_links=True, manage_messages=True, view_channel=True)
+    }
 
-    # 2. Category: CLASSIFIED DOSSIERS
-    cat_cards = discord.utils.get(guild.categories, name="🗂️ CLASSIFIED DOSSIERS") or await guild.create_category("🗂️ CLASSIFIED DOSSIERS")
+    # 1. Category: ARCHIVES & RULES (Read-Only)
+    cat_info = discord.utils.get(guild.categories, name="📌 ARCHIVES & RULES")
+    if not cat_info:
+        cat_info = await guild.create_category("📌 ARCHIVES & RULES", overwrites=read_only_overwrites)
+    else:
+        await cat_info.edit(overwrites=read_only_overwrites)
 
-    # 3. Category: INVESTIGATOR HUBS (Text Chat)
-    cat_chat = discord.utils.get(guild.categories, name="🌍 INVESTIGATOR HUBS") or await guild.create_category("🌍 INVESTIGATOR HUBS")
+    # 2. Category: CLASSIFIED DOSSIERS (Read-Only)
+    cat_cards = discord.utils.get(guild.categories, name="🗂️ CLASSIFIED DOSSIERS")
+    if not cat_cards:
+        cat_cards = await guild.create_category("🗂️ CLASSIFIED DOSSIERS", overwrites=read_only_overwrites)
+    else:
+        await cat_cards.edit(overwrites=read_only_overwrites)
 
-    # Create Channels in ARCHIVES & RULES
+    # 3. Category: INVESTIGATOR HUBS (Text Chat for Members)
+    cat_chat = discord.utils.get(guild.categories, name="🌍 INVESTIGATOR HUBS")
+    if not cat_chat:
+        cat_chat = await guild.create_category("🌍 INVESTIGATOR HUBS")
+
+    # Create Channels in ARCHIVES & RULES (All Locked to Read-Only)
     c_rules = discord.utils.get(guild.text_channels, name="welcome-rules")
     if not c_rules:
-        c_rules = await guild.create_text_channel("welcome-rules", category=cat_info)
+        c_rules = await guild.create_text_channel("welcome-rules", category=cat_info, overwrites=read_only_overwrites)
         embed_v = discord.Embed(
             title="🛡️ Welcome to Heart Of World — Security Protocol",
             description=(
@@ -173,10 +189,12 @@ async def execute_server_setup(guild: discord.Guild, status_channel=None):
             color=discord.Color.green()
         )
         await c_rules.send(embed=embed_v, view=VerificationView())
+    else:
+        await c_rules.edit(overwrites=read_only_overwrites)
 
     c_about = discord.utils.get(guild.text_channels, name="about-heart-of-world")
     if not c_about:
-        c_about = await guild.create_text_channel("about-heart-of-world", category=cat_info)
+        c_about = await guild.create_text_channel("about-heart-of-world", category=cat_info, overwrites=read_only_overwrites)
         embed_a = discord.Embed(
             title="🃏 HEART OF WORLD — THE WORLD HIDES SECRETS",
             description=(
@@ -211,20 +229,24 @@ async def execute_server_setup(guild: discord.Guild, status_channel=None):
             color=0x111111
         )
         await c_about.send(embed=embed_a)
+    else:
+        await c_about.edit(overwrites=read_only_overwrites)
 
     c_roles = discord.utils.get(guild.text_channels, name="roles-and-notifications")
     if not c_roles:
-        c_roles = await guild.create_text_channel("roles-and-notifications", category=cat_info)
+        c_roles = await guild.create_text_channel("roles-and-notifications", category=cat_info, overwrites=read_only_overwrites)
         embed_r = discord.Embed(
             title="🎭 Select Notification & Region Roles",
             description="Equip your clearance roles below:",
             color=discord.Color.blurple()
         )
         await c_roles.send(embed=embed_r, view=RoleSelectionView())
+    else:
+        await c_roles.edit(overwrites=read_only_overwrites)
 
     c_kick = discord.utils.get(guild.text_channels, name="kickstarter-updates")
     if not c_kick:
-        c_kick = await guild.create_text_channel("kickstarter-updates", category=cat_info)
+        c_kick = await guild.create_text_channel("kickstarter-updates", category=cat_info, overwrites=read_only_overwrites)
         embed_k = discord.Embed(
             title="🚀 Heart Of World — Official Kickstarter Hub",
             description=(
@@ -239,14 +261,21 @@ async def execute_server_setup(guild: discord.Guild, status_channel=None):
         )
         embed_k.add_field(name="🔗 Kickstarter Pre-Launch", value="[👉 Click Here to Follow & Get Notified](https://kickstarter.com)", inline=False)
         await c_kick.send(embed=embed_k)
+    else:
+        await c_kick.edit(overwrites=read_only_overwrites)
 
     # Create Channels in CLASSIFIED DOSSIERS
-    if not discord.utils.get(guild.text_channels, name="case-file-announcements"):
-        await guild.create_text_channel("case-file-announcements", category=cat_cards)
-    if not discord.utils.get(guild.text_channels, name="black-file-theories"):
+    c_case = discord.utils.get(guild.text_channels, name="case-file-announcements")
+    if not c_case:
+        await guild.create_text_channel("case-file-announcements", category=cat_cards, overwrites=read_only_overwrites)
+    else:
+        await c_case.edit(overwrites=read_only_overwrites)
+
+    c_black = discord.utils.get(guild.text_channels, name="black-file-theories")
+    if not c_black:
         await guild.create_text_channel("black-file-theories", category=cat_cards)
 
-    # Create Channels in INVESTIGATOR HUBS
+    # Create Channels in INVESTIGATOR HUBS (Members CAN chat here)
     regional_channels = [
         "general-investigation",
         "theories-and-clues",
@@ -263,7 +292,7 @@ async def execute_server_setup(guild: discord.Guild, status_channel=None):
             await guild.create_text_channel(ch_name, category=cat_chat)
 
     if status_channel:
-        await status_channel.send("✅ **Heart Of World Investigation Hub is LIVE!** All text archives, rules, regional hubs, and auto-moderation have been configured.")
+        await status_channel.send("✅ **Heart Of World Investigation Hub Configured!** `#welcome-rules`, `#about-heart-of-world`, `#roles-and-notifications`, and `#kickstarter-updates` are now locked to **READ-ONLY**.")
 
 
 # ----------------- Commands (Both Slash & Prefix !setup) -----------------
@@ -271,15 +300,15 @@ async def execute_server_setup(guild: discord.Guild, status_channel=None):
 @bot.command(name="setup")
 @commands.has_permissions(administrator=True)
 async def setup_prefix(ctx):
-    await ctx.send("⚙️ Setting up Heart Of World server archives...")
+    await ctx.send("⚙️ Configuring Heart Of World server permissions & channels...")
     await execute_server_setup(ctx.guild, ctx.channel)
 
-@bot.tree.command(name="setup_full_server", description="[Admin] Set up all classified categories, dossiers & regional text channels")
+@bot.tree.command(name="setup_full_server", description="[Admin] Set up all classified categories, dossiers & locked read-only channels")
 @app_commands.checks.has_permissions(administrator=True)
 async def setup_slash(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
     await execute_server_setup(interaction.guild)
-    await interaction.followup.send("✅ **Heart Of World Investigation Hub is LIVE!**", ephemeral=True)
+    await interaction.followup.send("✅ **Heart Of World Investigation Hub is LIVE!** Info channels are locked to Read-Only.", ephemeral=True)
 
 
 @bot.tree.command(name="about", description="Learn about the Heart Of World Collectible Card Story universe")
