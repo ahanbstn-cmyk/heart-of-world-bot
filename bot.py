@@ -17,13 +17,10 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 PORT = int(os.getenv("PORT", 10000))
 
-# Setup Intents
+# Safe default intents (Guaranteed not to crash even if privileged intents are disabled)
 intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True
 
 # ----------------- Profanity Filter Wordlist -----------------
-# Filters international and common toxic words/slurs
 PROFANITY_PATTERNS = [
     r'\bfuck\b', r'\bshit\b', r'\bbitch\b', r'\basshole\b', r'\bcunt\b', r'\bdick\b',
     r'\bnigger\b', r'\bnigga\b', r'\bfaggot\b', r'\bwhore\b', r'\bslut\b', r'\bbastard\b',
@@ -57,34 +54,6 @@ class HeartOfWorldBot(commands.Bot):
             name="THE WORLD HIDES SECRETS. 🗂️"
         )
         await self.change_presence(status=discord.Status.online, activity=activity)
-
-    # Automated Direct Message (DM) to new members
-    async def on_member_join(self, member: discord.Member):
-        try:
-            embed = discord.Embed(
-                title="🃏 Welcome to HEART OF WORLD",
-                description=(
-                    f"Greetings **{member.display_name}**, welcome to the official **Heart Of World** investigation archives!\n\n"
-                    "🔍 **THE WORLD HIDES SECRETS.**\n"
-                    "Heart Of World is an original **Collectible Card Story (CCS)** universe designed by **NukeCell**, transforming real documented paranormal phenomena, historical leaders, and major world catastrophes into deep collectible case files.\n\n"
-                    "🗂️ **Key Pillars:**\n"
-                    "• 👻 **PARANORMAL:** Documented unexplained cases & witness testimonies.\n"
-                    "• 📻 **FREQUENCY:** Historical icons, key leaders & mythos.\n"
-                    "• 💥 **ANOMALY:** Cataclysms, disasters & reality rifts.\n"
-                    "• ⬛ **BLACK FILE:** Secret multi-card files requiring puzzle completion.\n\n"
-                    "🌌 **Massive Living Universe:** 25 Seasons • 75 Sub-Seasons • 600 First Edition Cards.\n\n"
-                    "📌 **Start Here:**\n"
-                    "1. Obtain clearance in `#welcome-rules`.\n"
-                    "2. Read our official dossier in `#about-heart-of-world`.\n"
-                    "3. Select your region in `#roles-and-notifications`."
-                ),
-                color=0x111111
-            )
-            embed.set_footer(text="Heart Of World • Designed by NukeCell • Kickstarter VERY SOON")
-            await member.send(embed=embed)
-            print(f"[DM SUCCESS] Sent welcome dossier to {member.name}")
-        except Exception as e:
-            print(f"[DM NOTICE] Could not send DM to {member.name}: {e}")
 
     # Automated Profanity & Swear Filter
     async def on_message(self, message: discord.Message):
@@ -123,7 +92,7 @@ class VerificationView(discord.ui.View):
             try:
                 role = await guild.create_role(name="Investigator", color=discord.Color.teal(), reason="Auto-created for verification")
             except Exception:
-                await interaction.response.send_message("⚠️ Error creating role. Please grant 'Manage Roles' permission!", ephemeral=True)
+                await interaction.response.send_message("⚠️ Error creating role. Please grant 'Manage Roles' permission to the bot!", ephemeral=True)
                 return
 
         if role in interaction.user.roles:
@@ -197,7 +166,7 @@ async def setup_full_server(interaction: discord.Interaction):
                 "**THE WORLD HIDES SECRETS.**\n\n"
                 "Welcome to the official investigation hub of Heart Of World (Designed by NukeCell).\n\n"
                 "**Investigation Rules:**\n"
-                "1. Respect all fellow investigators. Zero tolerance for harassment.\n"
+                "1. Respect all fellow investigators. Zero tolerance for toxicity.\n"
                 "2. Profanity and offensive language are strictly prohibited and auto-filtered.\n"
                 "3. Keep discussions in the relevant regional channels.\n"
                 "4. Follow official updates on the 600 First Edition Cards & Kickstarter.\n\n"
