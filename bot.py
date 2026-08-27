@@ -163,10 +163,11 @@ async def execute_server_setup(guild: discord.Guild, status_channel=None):
                 "**THE WORLD HIDES SECRETS.**\n\n"
                 "Welcome to the official investigation hub of Heart Of World (Designed by NukeCell).\n\n"
                 "**Investigation Rules:**\n"
-                "1. Respect all fellow investigators. Zero tolerance for toxicity.\n"
-                "2. Profanity and offensive language are strictly prohibited and auto-filtered.\n"
-                "3. Keep discussions in the relevant regional channels.\n"
-                "4. Follow official updates on the 600 First Edition Cards & Kickstarter.\n\n"
+                "• Respect all fellow investigators. Zero tolerance for toxicity.\n"
+                "• Profanity and offensive language are strictly prohibited and auto-filtered.\n"
+                "• Keep discussions in the relevant regional channels.\n"
+                "• Follow official updates on the 600 First Edition Cards & Kickstarter.\n\n"
+                "🌐 **Official Portal:** [www.nukecell.com](https://www.nukecell.com)\n\n"
                 "Click the button below to obtain clearance:"
             ),
             color=discord.Color.green()
