@@ -54,7 +54,7 @@ class HeartOfWorldBot(commands.Bot):
 
         activity = discord.Activity(
             type=discord.ActivityType.watching, 
-            name="THE WORLD HIDES SECRETS. 🗂️"
+            name="THE WORLD HIDES SECRETS. • www.nukecell.com"
         )
         await self.change_presence(status=discord.Status.online, activity=activity)
 
@@ -179,7 +179,7 @@ async def execute_server_setup(guild: discord.Guild, status_channel=None):
         embed_a = discord.Embed(
             title="🃏 HEART OF WORLD — THE WORLD HIDES SECRETS",
             description=(
-                "**Developer & Design:** NukeCell\n"
+                "**Developer & Design:** NukeCell ([www.nukecell.com](https://www.nukecell.com))\n"
                 "**Genre:** CCS – Collectible Card Story\n"
                 "**Core Focus:** Mystery, Lore, Real Documented Phenomena & High-Value Collecting\n\n"
                 "Heart Of World is an original universe inspired by real documented events throughout human history, unsolved mysteries, and classified occurrences.\n\n"
@@ -204,6 +204,7 @@ async def execute_server_setup(guild: discord.Guild, status_channel=None):
                 "• 🏛️ **25 Main Seasons • 75 Sub-Seasons**\n"
                 "• 🎴 **600 Limited First Edition Serialized Prints**\n"
                 "• 👑 **Ultra-Rare 1-of-1 Anomaly Cards & Black File Relics**\n\n"
+                "🌐 **Official Portal:** [www.nukecell.com](https://www.nukecell.com)\n"
                 "🚀 **Kickstarter Launching VERY SOON!**"
             ),
             color=0x111111
@@ -230,6 +231,7 @@ async def execute_server_setup(guild: discord.Guild, status_channel=None):
                 "• 🎴 **600 Serialized First Edition Box Sets** (Physical Prints)\n"
                 "• ⬛ **Exclusive Stamped Black File Cards** (Never Reprinted)\n"
                 "• 📱 **Mobile In-Game Secret Dossiers & Founder Badges**\n"
+                "• 🌐 **Official Website:** [www.nukecell.com](https://www.nukecell.com)\n"
                 "• 💰 **Day-1 Early Bird Special Discounts**"
             ),
             color=discord.Color.gold()
@@ -284,7 +286,7 @@ async def about(interaction: discord.Interaction):
     embed = discord.Embed(
         title="🃏 HEART OF WORLD — THE WORLD HIDES SECRETS",
         description=(
-            "**Design & Development:** NukeCell\n"
+            "**Design & Development:** NukeCell ([www.nukecell.com](https://www.nukecell.com))\n"
             "**Genre:** CCS – Collectible Card Story\n\n"
             "Heart Of World is an original universe inspired by real documented events throughout human history, unsolved mysteries, and classified occurrences.\n\n"
             "📂 **3 Main Pillars:**\n"
@@ -293,7 +295,8 @@ async def about(interaction: discord.Interaction):
             "• 💥 **ANOMALY:** Catastrophes, civilization-altering events & reality rifts.\n\n"
             "🗂️ **Story Continuity & Black Files:**\n"
             "Cards form interconnected case files. Certain stories span multiple continuation cards that collectors assemble to decode the full dossier.\n\n"
-            "🌌 **Scope:** 25 Main Seasons • 75 Sub-Seasons • 600 First Edition Cards."
+            "🌌 **Scope:** 25 Main Seasons • 75 Sub-Seasons • 600 First Edition Cards.\n"
+            "🌐 **Official Portal:** [www.nukecell.com](https://www.nukecell.com)"
         ),
         color=0x111111
     )
@@ -311,6 +314,7 @@ async def kickstarter(interaction: discord.Interaction):
             "• 🗂️ **First Edition Serialized Box Sets** (Physical Stamped Foil Prints)\n"
             "• ⬛ **Exclusive Black File Foil Cards** (Never Reprinted)\n"
             "• 📱 **Mobile In-Game Secret Dossiers & Founder Badges**\n"
+            "• 🌐 **Official Portal:** [www.nukecell.com](https://www.nukecell.com)\n"
             "• 👑 **Lifetime Backer Clearance Role in Discord**\n"
             "• 💰 **Day-1 Early Bird Special Tier Discounts**"
         ),
@@ -319,7 +323,7 @@ async def kickstarter(interaction: discord.Interaction):
     embed.add_field(name="🔗 Kickstarter Pre-Launch Page", value="[👉 Click Here to Follow & Get Notified](https://kickstarter.com)", inline=False)
     embed.add_field(name="⏳ Status", value="**LAUNCHING VERY SOON**", inline=True)
     embed.add_field(name="🎴 Series", value="**600 First Edition Prints (NukeCell CCS)**", inline=True)
-    embed.set_footer(text="Heart Of World • The World Hides Secrets.", icon_url=bot.user.display_avatar.url if bot.user else None)
+    embed.set_footer(text="Heart Of World • The World Hides Secrets • www.nukecell.com", icon_url=bot.user.display_avatar.url if bot.user else None)
     await interaction.response.send_message(embed=embed)
 
 
@@ -330,17 +334,18 @@ async def socials(interaction: discord.Interaction):
         description="Follow Heart Of World across all official platforms:",
         color=discord.Color.blue()
     )
+    embed.add_field(name="🌐 Official Website", value="[www.nukecell.com](https://www.nukecell.com)", inline=False)
     embed.add_field(name="🚀 Kickstarter", value="[Pre-Launch Page](https://kickstarter.com)", inline=False)
     embed.add_field(name="🐦 Twitter / X", value="[Follow @HeartOfWorld](https://twitter.com)", inline=True)
     embed.add_field(name="📺 YouTube", value="[Watch Case Files & Teasers](https://youtube.com)", inline=True)
-    embed.add_field(name="🌐 Official Website", value="[NukeCell Portal](https://google.com)", inline=True)
+    embed.set_footer(text="NukeCell CCS • www.nukecell.com")
     await interaction.response.send_message(embed=embed)
 
 
 # ----------------- Health Check Server for Render -----------------
 
 async def handle_ping(request):
-    return web.Response(text="Heart Of World (NukeCell CCS) Bot is Online 🚀")
+    return web.Response(text="Heart Of World (NukeCell CCS) Bot is Online • www.nukecell.com 🚀")
 
 async def start_web_server():
     app = web.Application()
